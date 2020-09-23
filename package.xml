@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>leap_motion_demo</name>
+  <version>0.0.5</version>
+  <description>The leap_motion_demo package</description>
+
+  <author>Veiko Vunder</author>
+
+  <maintainer email="veiko.vunder@ut.ee">Veiko Vunder</maintainer>
+  <maintainer email="karl.kruusamae@ut.ee">Karl Kruusamäe</maintainer>
+
+  <url type="website">https://wiki.ros.org/robotont</url>
+  <url type="website">http://robotont.ut.ee</url>
+  <url type="repository">http://github.com/robotont/leap_motion_demo</url>
+
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>leap_motion_controller</exec_depend>
+  <exec_depend>robotont_driver</exec_depend>
+  <exec_depend>robotont_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+
+  <export>
+  </export>
+</package>

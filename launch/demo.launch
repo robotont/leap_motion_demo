@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+<launch>
+    <node name="leap_motion_controller" pkg="leap_motion_controller" type="leap_motion" respawn="false" output="screen" />
+    <node name="robotont_leap_demo" pkg="leap_motion_demo" type="demo.py" output="screen" />
+</launch>
