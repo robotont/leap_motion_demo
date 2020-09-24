@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import rospy
+import tf
 from geometry_msgs.msg import Twist
 from robotont_msgs.msg import LedModuleSegment, ColorRGB
 from leap_motion_controller.msg import Set, Hand, Finger
@@ -12,38 +13,39 @@ ANGLE_TOLERANCE = 0.1
 
 last_heartbeat = 0
 
-yaw = 0
 
 def callback(data):
-    global last_heartbeat, yaw
+    global last_heartbeat
+    yaw = 0
+
     if data.left_hand.is_present:
         left_pos = data.left_hand.palm_pose.pose.position
         left_ori = data.left_hand.palm_pose.pose.orientation
-        left_euler = tf.transformations.euler_from_quaternion(left_ori)
-        yaw = euler[2]
+        yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z, left_ori.w])[1]
 
-        rospy.loginfo("got left hand:", left_pos.z)
-        rospy.loginfo("  pos z:", left_pos.z)
-        rospy.loginfo("  euler:", euler)
+        rospy.loginfo("got left hand: %f", left_pos.z)
+        rospy.loginfo("  pos z: %f", left_pos.z)
+        rospy.loginfo("  yaw: %f", yaw)
 
     if data.right_hand.is_present:
         right_pos = data.right_hand.palm_pose.pose.position
         right_ori = data.right_hand.palm_pose.pose.orientation
-        right_euler = tf.transformations.euler_from_quaternion(left_ori)
-        yaw = euler[2]
+        yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z, right_ori.w])[1]
 
-        rospy.loginfo("got right hand:", right_pos.z)
-        rospy.loginfo("  pos z:", right_pos.z)
-        rospy.loginfo("  euler:", euler)
+        rospy.loginfo("got right hand: %f", right_pos.z)
+        rospy.loginfo("  pos z: %f", right_pos.z)
+        rospy.loginfo("  yaw: %f", yaw)
 
+    if abs(yaw) < ANGLE_TOLERANCE:
+        yaw=0
 
     twist_msg = Twist()
     twist_msg.angular.z = min(max(yaw,-MAX_ANG_VEL),MAX_ANG_VEL)
 
-    if abs(yaw) > ANGLE_TOLERANCE:
-        global cmd_vel_pub
-        last_heartbeat = rospy.get_time()
-        cmd_vel_pub.publish(twist_msg)
+
+    global cmd_vel_pub
+    cmd_vel_pub.publish(twist_msg)
+    last_heartbeat = rospy.get_time()
 
 
 # Publish zero cmd_vel when no AR info has been received within given period
@@ -65,7 +67,7 @@ def controller_main():
     led_msg = LedModuleSegment()
 
     # Initialize subscriber
-    rospy.Subscriber("leap_motion_output", Set, callback)
+    rospy.Subscriber("/robotont/leap_motion_output", Set, callback)
 
     #Register heartbeat timer
     t = rospy.Timer(rospy.Duration(0.1), timer_callback)
