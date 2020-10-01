@@ -2,7 +2,7 @@
 import rospy
 import tf
 from robotont_msgs.msg import LedModuleSegment, ColorRGB
-from leap_motion_controller.msg import Set, Hand, Finger
+from leap_motion.msg import Set, Hand, Finger
 import time
 import math
 

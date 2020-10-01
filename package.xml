@@ -16,7 +16,7 @@
   <license>Apache 2.0</license>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>leap_motion_controller</exec_depend>
+  <exec_depend>leap_motion</exec_depend>
   <exec_depend>robotont_driver</exec_depend>
   <exec_depend>robotont_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>

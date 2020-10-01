@@ -3,7 +3,9 @@ import rospy
 import tf
 from geometry_msgs.msg import Twist
 from robotont_msgs.msg import LedModuleSegment, ColorRGB
-from leap_motion_controller.msg import Set, Hand, Finger
+#from leap_motion_controller.msg import Set, Hand, Finger
+from leap_motion.msg import Human, Hand, Finger #Set, 
+
 import time
 import math
 
@@ -19,22 +21,27 @@ def callback(data):
     yaw = 0
 
     if data.left_hand.is_present:
-        left_pos = data.left_hand.palm_pose.pose.position
-        left_ori = data.left_hand.palm_pose.pose.orientation
-        yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z, left_ori.w])[1]
-
+        #left_pos = data.left_hand.palm_pose.pose.position
+        left_pos = data.left_hand.palm_center
+        #left_ori = data.left_hand.palm_pose.pose.orientation
+        left_ori = data.left_hand.direction
+        #yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z])[1]
+	#yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z, left_ori.w])[1]
+	yaw = data.left_hand.yaw
+	rospy.loginfo("Have left hand Here")
         rospy.loginfo("got left hand: %f", left_pos.z)
         rospy.loginfo("  pos z: %f", left_pos.z)
         rospy.loginfo("  yaw: %f", yaw)
 
     if data.right_hand.is_present:
-        right_pos = data.right_hand.palm_pose.pose.position
-        right_ori = data.right_hand.palm_pose.pose.orientation
-        yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z, right_ori.w])[1]
-
-        rospy.loginfo("got right hand: %f", right_pos.z)
-        rospy.loginfo("  pos z: %f", right_pos.z)
-        rospy.loginfo("  yaw: %f", yaw)
+	pass
+        #right_pos = data.right_hand.palm_pose.pose.position
+        #right_ori = data.right_hand.palm_pose.pose.orientation
+        #yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z, right_ori.w])[1]
+	
+        #rospy.loginfo("got right hand: %f", right_pos.z)
+        #rospy.loginfo("  pos z: %f", right_pos.z)
+        #rospy.loginfo("  yaw: %f", yaw)
 
     if abs(yaw) < ANGLE_TOLERANCE:
         yaw=0
@@ -67,7 +74,7 @@ def controller_main():
     led_msg = LedModuleSegment()
 
     # Initialize subscriber
-    rospy.Subscriber("/robotont/leap_motion_output", Set, callback)
+    rospy.Subscriber("/leap_motion/leap_device", Human, callback)  #/robotont/leap_motion_output
 
     #Register heartbeat timer
     t = rospy.Timer(rospy.Duration(0.1), timer_callback)
