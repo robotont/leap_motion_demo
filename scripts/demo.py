@@ -12,6 +12,7 @@ MAX_LIN_VEL = 0.5
 MAX_ANG_VEL = 1.5
 ANGLE_TOLERANCE = 0.15
 VELOCITY_TOLERANCE = 0.028
+MULTIPLY = -2
 
 # Choose robot type
 ROBOT_TYPE = "OMNI"
@@ -28,13 +29,16 @@ def callback(data):
     if data.left_hand.is_present:
         left_pos = data.left_hand.palm_center
         left_ori = data.left_hand.direction
+        hand.ori = left_ori
+        hand.pos = left_pos
+        left_pinch = data.left_hand.pinch_strength
+        hand_pinch = left_pinch
+        left_grab = data.left_hand.grab_strength
+        hand_grab = left_grab
         #yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z])[1]
-	#yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z, left_ori.w])[1]
-	yaw = -2*data.left_hand.yaw
-	#rospy.loginfo("Have left hand Here")
-        #rospy.loginfo("got left hand: %f", left_pos.z)
-        #rospy.loginfo("  pos z: %f", left_pos.z)
-        #rospy.loginfo("  yaw: %f", yaw)
+	    #yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z, left_ori.w])[1]
+	    yaw = MULTIPLY*data.left_hand.yaw
+
         if left_pos.x > 0: #Hand: Right  Robot:Forward
             pass
         if left_pos.x < 0: #Left  Back
@@ -43,71 +47,40 @@ def callback(data):
             pass
         if left_pos.z < 0: #Forward  Right
             pass
-        #rospy.loginfo("  position x: %f", left_pos.x)
-        #rospy.loginfo("  position y: %f", left_pos.y)
-	#rospy.loginfo("  pinch_strength: %f", data.left_hand.pinch_strength)
-        if data.left_hand.pinch_strength >= 0.5:
-	    #rospy.loginfo(str(left_pos.x) +"   "+ str(left_pos.z))
-            if ROBOT_TYPE == "OMNI":
-	    	#left_pos = data.left_hand.pose.center
-            	#rospy.loginfo("I am moving")
-	    	if abs(left_pos.z) < VELOCITY_TOLERANCE:
-    	        	left_pos.z = 0
-	    	if abs(left_pos.x) < VELOCITY_TOLERANCE:
-                	left_pos.x = 0
+        
 
-            	twist_msg.linear.x = min(max(-2*left_pos.z,-MAX_LIN_VEL),MAX_LIN_VEL)
-            	twist_msg.linear.y = min(max(-2*left_pos.x,-MAX_LIN_VEL),MAX_LIN_VEL)
-            
-	    #elif ROBOT_TYPE == "ORI":
-	    	#if abs(left_pos.x) >= 0.1:
-		    #pass
-	    #rospy.loginfo("  position: %f", twist_msg.linear.x)
-            #rospy.loginfo("  position: %f", twist_msg.linear.y)
-            
-			
+    elif data.right_hand.is_present:
+        if data.right_hand.is_present:
+            right_pos = data.right_hand.palm_center
+            right_ori = data.right_hand.direction
+            hand_ori = right_ori
+            hand_pos = right_pos
+            right_pinch = data.right_hand.pinch_strength
+            hand_pinch = right_pinch
+            right_grab = right.right_hand.grab_strength
+            hand_grab = right_grab
+            #yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z])[1]
+            #yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z, right_ori.w])[1]
+            yaw = MULTIPLY*data.right_hand.yaw
 
-    if data.right_hand.is_present:
-        right_pos = data.right_hand.palm_center
-        #right_ori = data.right_hand.palm_pose.pose.orientation
-        right_ori = data.right_hand.direction
-        #yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z])[1]
-	#yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z, right_ori.w])[1]
-	yaw = -2*data.right_hand.yaw
-	#rospy.loginfo("Have right hand Here")
-        #rospy.loginfo("got right hand: %f", right_pos.z)
-        #rospy.loginfo("  pos z: %f", right_pos.z)
-        #rospy.loginfo("  yaw: %f", yaw)
-        if right_pos.x > 0:
-            pass
-        if right_pos.x < 0:
-            pass
-        if right_pos.z > 0:
-            pass
-        if right_pos.z < 0:
-            pass
-        #rospy.loginfo("  position x: %f", right_pos.x)
-        #rospy.loginfo("  position y: %f", right_pos.y)
-        #rospy.loginfo("  pinch_strength: %f", data.right_hand.pinch_strength)
-		
-        if data.right_hand.pinch_strength >= 0.5:
-            #right_pos = data.right_hand.pose.center
-            #rospy.loginfo("Liigutan")
-	    if abs(right_pos.z) < VELOCITY_TOLERANCE:
-               	right_pos.z = 0
-            if abs(right_pos.x) < VELOCITY_TOLERANCE:
-            	right_pos.x = 0
 
-            twist_msg.linear.x = min(max(-2*right_pos.z,-MAX_LIN_VEL),MAX_LIN_VEL)
-            twist_msg.linear.y = min(max(-2*right_pos.x,-MAX_LIN_VEL),MAX_LIN_VEL)
-            #rospy.loginfo("  position: %f", twist_msg.linear.x)
-            #rospy.loginfo("  position: %f", twist_msg.linear.y)
+    if hand_pinch >= 0.5:
+        if ROBOT_TYPE == "OMNI":
+        if abs(hand_pos.z) < VELOCITY_TOLERANCE:
+                hand_pos.z = 0
+        if abs(hand_pos.x) < VELOCITY_TOLERANCE:
+                hand_pos.x = 0
+
+        twist_msg.linear.x = min(max(MULTIPLY*hand_pos.z,-MAX_LIN_VEL),MAX_LIN_VEL)
+        twist_msg.linear.y = min(max(MULTIPLY*hand_pos.x,-MAX_LIN_VEL),MAX_LIN_VEL)
+
+
 
     
     if abs(yaw) < ANGLE_TOLERANCE:
         yaw=0
 
-    if data.left_hand.grab_strength != 1:
+    if hand_grab != 1:
         twist_msg.angular.z = min(max(yaw,-MAX_ANG_VEL),MAX_ANG_VEL)
 	#if yaw != 0:
 	    #rospy.loginfo(" Speed: %f", twist_msg.angular.z)
