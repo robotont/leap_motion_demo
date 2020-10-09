@@ -1,5 +1,9 @@
 <?xml version="1.0" ?>
 <launch>
     <node name="leap_motion" pkg="leap_motion" type="leap_motion_driver_node" respawn="false" output="screen" />
-    <node name="robotont_leap_demo" pkg="leap_motion_demo" type="demo.py" output="screen" />
+  <group ns="leap_motion">
+    <node pkg="leap_motion" type="leap_camera" name="leap_camera" output="screen"/>
+    <node pkg="leap_motion" type="leap_hands" name="leap_hands" output="screen"/>
+  </group>        
+  <node name="robotont_leap_demo" pkg="leap_motion_demo" type="demo.py" output="screen" />
 </launch>
