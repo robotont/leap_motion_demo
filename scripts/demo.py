@@ -25,19 +25,22 @@ last_heartbeat = 0
 def callback(data):
     global last_heartbeat
     yaw = 0
+    hand_pinch = 0
+    hand_grab = 0
+    
     twist_msg = Twist()
     if data.left_hand.is_present:
         left_pos = data.left_hand.palm_center
         left_ori = data.left_hand.direction
-        hand.ori = left_ori
-        hand.pos = left_pos
+        hand_ori = left_ori
+        hand_pos = left_pos
         left_pinch = data.left_hand.pinch_strength
         hand_pinch = left_pinch
         left_grab = data.left_hand.grab_strength
         hand_grab = left_grab
         #yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z])[1]
-	    #yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z, left_ori.w])[1]
-	    yaw = MULTIPLY*data.left_hand.yaw
+	#yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z, left_ori.w])[1]
+	yaw = MULTIPLY*data.left_hand.yaw
 
         if left_pos.x > 0: #Hand: Right  Robot:Forward
             pass
@@ -50,25 +53,24 @@ def callback(data):
         
 
     elif data.right_hand.is_present:
-        if data.right_hand.is_present:
-            right_pos = data.right_hand.palm_center
-            right_ori = data.right_hand.direction
-            hand_ori = right_ori
-            hand_pos = right_pos
-            right_pinch = data.right_hand.pinch_strength
-            hand_pinch = right_pinch
-            right_grab = right.right_hand.grab_strength
-            hand_grab = right_grab
-            #yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z])[1]
-            #yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z, right_ori.w])[1]
-            yaw = MULTIPLY*data.right_hand.yaw
+        right_pos = data.right_hand.palm_center
+        right_ori = data.right_hand.direction
+        hand_ori = right_ori
+        hand_pos = right_pos
+        right_pinch = data.right_hand.pinch_strength
+        hand_pinch = right_pinch
+        right_grab = data.right_hand.grab_strength
+        hand_grab = right_grab
+        #yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z])[1]
+        #yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z, right_ori.w])[1]
+        yaw = MULTIPLY*data.right_hand.yaw
 
 
     if hand_pinch >= 0.5:
         if ROBOT_TYPE == "OMNI":
-        if abs(hand_pos.z) < VELOCITY_TOLERANCE:
+    	    if abs(hand_pos.z) < VELOCITY_TOLERANCE:
                 hand_pos.z = 0
-        if abs(hand_pos.x) < VELOCITY_TOLERANCE:
+            if abs(hand_pos.x) < VELOCITY_TOLERANCE:
                 hand_pos.x = 0
 
         twist_msg.linear.x = min(max(MULTIPLY*hand_pos.z,-MAX_LIN_VEL),MAX_LIN_VEL)
@@ -84,7 +86,6 @@ def callback(data):
         twist_msg.angular.z = min(max(yaw,-MAX_ANG_VEL),MAX_ANG_VEL)
 	#if yaw != 0:
 	    #rospy.loginfo(" Speed: %f", twist_msg.angular.z)
-
     global cmd_vel_pub
     cmd_vel_pub.publish(twist_msg)
     last_heartbeat = rospy.get_time()
