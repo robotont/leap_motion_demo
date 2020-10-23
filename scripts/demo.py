@@ -20,13 +20,26 @@ ROBOT_TYPE = "OMNI"
 # ROBOT_TYPE = "ORI"
 
 last_heartbeat = 0
+last_gesture = 0
+last_fing = 0
+finger_mem = 5
+fingers = 0
 
 
 def callback(data):
     global last_heartbeat
+    global last_gesture
+    global last_fing
+    global fingers
+    global finger_mem
+    if (rospy.get_time() - last_fing) >= finger_mem:
+        fingers = 0
+        last_fing = rospy.get_time()
+    
     yaw = 0
     hand_pinch = 0
     hand_grab = 0
+    gestures = []
     
     twist_msg = Twist()
     if data.left_hand.is_present:
@@ -38,6 +51,9 @@ def callback(data):
         hand_pinch = left_pinch
         left_grab = data.left_hand.grab_strength
         hand_grab = left_grab
+        gestures = data.left_hand.gesture_list
+
+        
         #yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z])[1]
 	#yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z, left_ori.w])[1]
 	yaw = MULTIPLY*data.left_hand.yaw
@@ -64,6 +80,7 @@ def callback(data):
         #yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z])[1]
         #yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z, right_ori.w])[1]
         yaw = MULTIPLY*data.right_hand.yaw
+        gestures = data.right_hand.gesture_list
 
 
     if hand_pinch >= 0.5:
@@ -77,12 +94,36 @@ def callback(data):
         twist_msg.linear.y = min(max(MULTIPLY*hand_pos.x,-MAX_LIN_VEL),MAX_LIN_VEL)
 
 
-
+    for i in range(len(gestures)):
+        if (rospy.get_time() - last_gesture) >= 1:
+            if gestures[i].gesture_type == 1 and gestures[i].gesture_state == 3:
+                if fingers == 1:
+                    rospy.loginfo("L2hen esimesse kontorisse")
+                elif fingers == 2:
+                    rospy.loginfo("L2hen teisse kontorisse")
+                elif fingers == 3:
+                    rospy.loginfo("L2hen kolmandasse kontorisse")
+                elif fingers == 4:
+                    rospy.loginfo("L2hen neljandasse kontorisse")
+                else:
+                    rospy.loginfo("Ei tea, kuhu minna.")
+                #print(fingers)
+                #rospy.loginfo("Swipe")
+                last_gesture = rospy.get_time()
+                break
+        if gestures[i].gesture_type == 4 and gestures[i].gesture_state == 3:
+            fingers = max(fingers, len(gestures))
+            if fingers > 5:
+                fingers = 5
+            last_fing = rospy.get_time()
+            break
+            
+        
     
     if abs(yaw) < ANGLE_TOLERANCE:
         yaw=0
 
-    if hand_grab != 1:
+    if hand_grab >= 0.5 :
         twist_msg.angular.z = min(max(yaw,-MAX_ANG_VEL),MAX_ANG_VEL)
 	#if yaw != 0:
 	    #rospy.loginfo(" Speed: %f", twist_msg.angular.z)

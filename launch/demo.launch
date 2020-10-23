@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <launch>
+    <rosparam file="$(find leap_motion_demo)/config/listener_params.yaml" command="load" />
     <node name="leap_motion" pkg="leap_motion" type="leap_motion_driver_node" respawn="false" output="screen" />
   <group ns="leap_motion">
     <node pkg="leap_motion" type="leap_camera" name="leap_camera" output="screen"/>
