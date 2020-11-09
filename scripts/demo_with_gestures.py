@@ -54,9 +54,7 @@ def callback(data):
         gestures = data.left_hand.gesture_list
 
         
-        #yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z])[1]
-	#yaw = tf.transformations.euler_from_quaternion([left_ori.x, left_ori.y, left_ori.z, left_ori.w])[1]
-	yaw = MULTIPLY*data.left_hand.yaw
+        yaw = MULTIPLY*data.left_hand.yaw
 
         if left_pos.x > 0: #Hand: Right  Robot:Forward
             pass
@@ -77,8 +75,6 @@ def callback(data):
         hand_pinch = right_pinch
         right_grab = data.right_hand.grab_strength
         hand_grab = right_grab
-        #yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z])[1]
-        #yaw = tf.transformations.euler_from_quaternion([right_ori.x, right_ori.y, right_ori.z, right_ori.w])[1]
         yaw = MULTIPLY*data.right_hand.yaw
         gestures = data.right_hand.gesture_list
 
@@ -97,16 +93,7 @@ def callback(data):
     for i in range(len(gestures)):
         if (rospy.get_time() - last_gesture) >= 1:
             if gestures[i].gesture_type == 1 and gestures[i].gesture_state == 3:
-                if fingers == 1:
-                    rospy.loginfo("L2hen esimesse kontorisse")
-                elif fingers == 2:
-                    rospy.loginfo("L2hen teisse kontorisse")
-                elif fingers == 3:
-                    rospy.loginfo("L2hen kolmandasse kontorisse")
-                elif fingers == 4:
-                    rospy.loginfo("L2hen neljandasse kontorisse")
-                else:
-                    rospy.loginfo("Ei tea, kuhu minna.")
+                rospy.loginfo("I'll move to next station")
                 #print(fingers)
                 #rospy.loginfo("Swipe")
                 last_gesture = rospy.get_time()
